@@ -16,6 +16,13 @@ server.listen(3000, () => {
   console.log('Server is running on http://localhost:3000');
 });
 
+//clean up old subscriptions
+const { data: existingSubscriptions } = await client.listEventSubSubscriptions();
+for (const sub of existingSubscriptions) {
+  await client.deleteEventSubSubscription(sub.id);
+  console.log(`Deleted subscription: ${sub.id}`);
+}
+
 //read channels.json from data directory
 const dataDir = process.env.DATA_DIR || './data';
 const channelsFile = process.env.NODE_ENV === 'development' ? 'channels.dev.json' : 'channels.json';
@@ -40,7 +47,7 @@ for (const channel of channels) {
     { broadcaster_user_id: user.id },
     callbackUrl
   );
-  console.log(`Created subscription for ${user.display_name}`);
+  console.log(`Created subscription for ${channel}`);
 }
 
 //wait for 30 seconds
