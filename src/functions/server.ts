@@ -53,16 +53,16 @@ export const createServer = (): Express => {
     }
     if (headers['twitch-eventsub-message-type'] === 'notification') {
       const broadcasterId = body.event.broadcaster_user_id;
-      console.log(`Received notification for broadcaster ID: ${broadcasterId}`);
+      console.log(`[Twitch] Received notification for broadcaster ID: ${broadcasterId}`);
       res.status(200).end();
       sendMessage('twitch', broadcasterId);
       return;
     }
     if (headers['twitch-eventsub-message-type']) {
-      console.warn('Received unhandled Twitch EventSub message:', headers['twitch-eventsub-message-type']);
+      console.warn('[Twitch] Received unhandled Twitch EventSub message:', headers['twitch-eventsub-message-type']);
       return res.status(200).end();
     }
-    console.log('Unknown message type');
+    console.log('[Twitch] Unknown message type');
     return res.status(400).end();
   });
 
@@ -92,14 +92,14 @@ export const createServer = (): Express => {
     if (eventType === 'livestream.status.updated' && body.is_live === true) {
       const broadcasterId = body.broadcaster.user_id;
       if (broadcasterId) {
-        console.log(`Received Kick notification for broadcaster ID: ${broadcasterId}`);
+        console.log(`[Kick] Received Kick notification for broadcaster ID: ${broadcasterId}`);
         res.status(200).end();
         sendMessage('kick', broadcasterId.toString());
         return;
       }
     }
 
-    console.log('Received unhandled Kick EventSub message type:', eventType);
+    console.log('[Kick] Received unhandled Kick EventSub message type:', eventType);
     return res.status(200).end();
   });
 
