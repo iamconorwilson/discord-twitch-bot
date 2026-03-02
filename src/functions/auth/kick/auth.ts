@@ -115,7 +115,14 @@ export class KickApiClient {
   }
 
   private async fetchPublicKey(): Promise<void> {
-    const response = await fetch('https://api.kick.com/public/v1/public-key');
+    if (process.env.NODE_ENV === 'development' && process.env.KICK_PUBLIC_KEY) {
+      console.log('[Kick] Using KICK_PUBLIC_KEY from environment.');
+      // Handle the case where the key may have been replaced with literal \n
+      this.publicKey = process.env.KICK_PUBLIC_KEY.replace(/\\n/g, '\n').trim();
+      return;
+    }
+
+    const response = await fetch(`${KickApiClient.API_BASE_URL}/public-key`);
     if (!response.ok) {
       console.error('[Kick] Failed to fetch Kick Public Key');
       return;

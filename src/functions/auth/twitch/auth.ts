@@ -22,7 +22,7 @@ export class TwitchApiClient {
 
     private config: TwitchApiConfig;
     private appToken: TwitchToken | null = null;
-    private secret: string = process.env.EVENTSUB_SECRET || crypto.randomBytes(32).toString('hex');
+    private secret: string = process.env.EVENTSUB_SECRET || (process.env.NODE_ENV === 'development' ? 'test_secret_123' : crypto.randomBytes(32).toString('hex'));
 
     private constructor(config: TwitchApiConfig) {
         this.config = config;

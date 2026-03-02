@@ -74,6 +74,17 @@ const getKickStreamData = async (userId: string): Promise<NormalizedStreamData> 
 
 // Helper function to get stream and broadcaster info with retries
 const getStreamWithRetry = async (platform: Platform, userId: string, retries = 6, delay = 5000): Promise<NormalizedStreamData | null> => {
+  if (process.env.NODE_ENV === 'development') {
+    return {
+      streamTitle: "[Mock Server] Test Stream View",
+      streamCategory: "Just Chatting",
+      username: platform === 'twitch' ? 'Twitch Mock User' : 'Kick Mock User',
+      streamUrl: platform === 'twitch' ? `https://twitch.tv/no_oj` : `https://kick.com/no-oj`,
+      streamThumbnail: "https://placehold.co/1280x720.png?text=Mock+Stream",
+      userThumbnail: "https://placehold.co/150"
+    };
+  }
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       if (platform === 'twitch') {
