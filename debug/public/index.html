@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Webhook Dashboard</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background-color: #111;
+        color: #fff;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      .panel {
+        background: #222;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-top: 5px solid #fff;
+      }
+
+      .twitch-panel {
+        border-top-color: #9146FF;
+      }
+
+      .kick-panel {
+        border-top-color: #53FC18;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        background-color: #333;
+        color: #fff;
+        border: 1px solid #666;
+        border-radius: 4px;
+      }
+
+      .checkbox-label {
+        display: inline-flex;
+        align-items: center;
+        font-weight: normal;
+      }
+
+      .checkbox-label input {
+        margin-right: 8px;
+      }
+
+      button {
+        width: 100%;
+        padding: 10px;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      .twitch-btn {
+        background-color: #9146FF;
+      }
+
+      .twitch-btn:hover {
+        background-color: #772CE8;
+      }
+
+      .kick-btn {
+        background-color: #53FC18;
+        color: #000;
+      }
+
+      .kick-btn:hover {
+        background-color: #46e013;
+      }
+
+      #toast {
+        display: none;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        color: white;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .toast-success {
+        background-color: #4CAF50;
+      }
+
+      .toast-error {
+        background-color: #f44336;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Webhook Dev Dashboard</h1>
+
+    <div id="toast"></div>
+
+    <div class="panel twitch-panel">
+      <h2>Twitch</h2>
+      <div class="form-group">
+        <label for="twitch-id">Broadcaster ID</label>
+        <input type="text" id="twitch-id" value="12345678" placeholder="e.g. 12345678">
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="twitch-status" checked>
+          Stream is LIVE
+        </label>
+      </div>
+      <button class="twitch-btn" onclick="dispatchWebhook('twitch')">Send Twitch Webhook</button>
+    </div>
+
+    <div class="panel kick-panel">
+      <h2>Kick</h2>
+      <div class="form-group">
+        <label for="kick-id">Broadcaster ID</label>
+        <input type="text" id="kick-id" value="987654" placeholder="e.g. 987654">
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="kick-status" checked>
+          Stream is LIVE
+        </label>
+      </div>
+      <button class="kick-btn" onclick="dispatchWebhook('kick')">Send Kick Webhook</button>
+    </div>
+
+    <script>
+      let toastTimeout;
+      function showToast(message, isSuccess) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = isSuccess ? 'toast-success' : 'toast-error';
+        toast.style.display = 'block';
+
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          toast.style.display = 'none';
+        }, 4000);
+      }
+
+      async function dispatchWebhook(platform) {
+        const btn = event.currentTarget;
+        const originalContent = btn.textContent;
+        btn.textContent = 'Sending...';
+        btn.disabled = true;
+
+        const broadcasterId = document.getElementById(`${platform}-id`).value;
+        const isLive = document.getElementById(`${platform}-status`).checked;
+
+        try {
+          const res = await fetch(`/api/dispatch/${platform}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ broadcasterId, isLive })
+          });
+
+          const data = await res.json();
+
+          if (data.success) {
+            showToast(`${platform.toUpperCase()} webhook delivered successfully (Status: ${data.status})`, true);
+          } else {
+            showToast(`Delivery Failed: Bot responded with status ${data.status || 'unknown'}. Check bot logs.`, false);
+          }
+        } catch (err) {
+          showToast(`Error: ${err.message}`, false);
+        } finally {
+          btn.textContent = originalContent;
+          btn.disabled = false;
+        }
+      }
+    </script>
+  </body>
+
+</html>
