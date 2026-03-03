@@ -176,7 +176,11 @@ export class KickApiClient {
 
   public async getUser(identifier: string): Promise<KickUser | null> {
     try {
-      return await this.makeApiRequest(`users?id=${encodeURIComponent(identifier)}`);
+      const response: KickUser = await this.makeApiRequest(`users?id=${encodeURIComponent(identifier)}`);
+      if (response && (response as any).data && Array.isArray((response as any).data)) {
+        return (response as any).data[0] || null;
+      }
+      return response;
     } catch (err) {
       console.error(`[Kick] Error fetching user info for ${identifier}:`, err);
       return null;

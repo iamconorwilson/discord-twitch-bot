@@ -131,7 +131,7 @@ export const sendMessage = async (platform: Platform, userId: string) => {
         description: '',
         fields: [
           {
-            name: 'Game',
+            name: 'Category',
             value: `${data.streamCategory}`,
             inline: false
           }
@@ -163,10 +163,11 @@ export const sendMessage = async (platform: Platform, userId: string) => {
       body: JSON.stringify(message)
     });
     if (!response.ok) {
-      console.error('Error sending message to Discord:', response.statusText);
+      throw new Error(JSON.stringify(response, null, 2));
     }
   } catch (error) {
     console.error('Error sending message to Discord:', error);
+    console.log(JSON.stringify(message, null, 2));
   }
   console.log(`Sent Discord notification for ${data.username} (${platform})`);
 
